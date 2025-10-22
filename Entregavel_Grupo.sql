@@ -49,7 +49,7 @@ idMedicao INT PRIMARY KEY AUTO_INCREMENT,
 umidade DECIMAL(4,1),
 fksensor INT,
 CONSTRAINT fkMedicaoSensor FOREIGN KEY(fksensor) REFERENCES sensor(idSensor),
-dtMedicao DATETIME DEFAULT CURRENT_TIMESTAMP
+dtMedicao DATETIME DEFAULT
 );
 -- --------------------------------------- INSERT DAS TABELAS -----------------------------------------
 
