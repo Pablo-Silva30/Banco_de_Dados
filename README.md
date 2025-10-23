@@ -5,7 +5,7 @@
 ## Descrição do Banco de Dados
 
 Criamos o Banco de Dados para armazenar os dados do Cliente. Para fazer isso, nós criamos um Diagrama de Negócio, onde adicionamos 6 tabelas, sendo elas: "usuario","empresa","hectare","subArea","sensor" e "medicao".<br>
-Cada uma dessas tabelas tabelas tem a sua função de armazenar os dados, como por exemplo:<br<br>
+Cada uma dessas tabelas tabelas tem a sua função de armazenar os dados, como por exemplo:<br>
 
 Tabela "usuario": Inserção dos dados do funcionário da empresa contratante, que ira monitorar os hectares e suas Subáreas, de onde vem as medições do Sensor De umidade.<br><br>
 Tabela "empresa": Onde vão ficar os dados da Empresa.<br><br>
