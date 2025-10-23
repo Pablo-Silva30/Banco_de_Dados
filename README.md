@@ -1,6 +1,6 @@
 # Banco_de_Dados
 
-<img src="[https://portaladama.com/wp-content/uploads/2022/05/051122_imagem_batata_adobeStock_66913132-1-scaled.jpeg](https://thumbs.dreamstime.com/b/%C3%ADcone-do-centro-de-dados-projeto-monocrom%C3%A1tico-estilo-da-cole%C3%A7%C3%A3o-grande-dos-ui-simples-perfeito-pictograma-pixel-web-126724763.jpg)">
+<img src="[https://portaladama.com/wp-content/uploads/2022/05/051122_imagem_batata_adobeStock_66913132-1-scaled.jpeg](https://thumbs.dreamstime.com/b/%C3%ADcone-do-centro-de-dados-projeto-monocrom%C3%A1tico-estilo-da-cole%C3%A7%C3%A3o-grande-dos-ui-simples-perfeito-pictograma-pixel-web-126724763.jpg)">;
 
 ## Descrição do Banco de Dados
 
