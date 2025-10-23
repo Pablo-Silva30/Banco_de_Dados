@@ -7,13 +7,13 @@
 Criamos o Banco de Dados para armazenar os dados do Cliente. Para fazer isso, nós criamos um Diagrama de Negócio, onde adicionamos 6 tabelas, sendo elas: "usuario","empresa","hectare","subArea","sensor" e "medicao".<br>
 Cada uma dessas tabelas tabelas tem a sua função de armazenar os dados, como por exemplo:<br<br>
 
-Tabela "usuario": Inserção dos dados do funcionário da empresa contratante, que ira monitorar os hectares e suas Subáreas, de onde vem as medições do Sensor De umidade.<br>
-Tabela "empresa": Onde vão ficar os dados da Empresa.<br>
-Tabela "hectare": Vai ficar os dados do hectare, sendo a identificação dos hectares e da quantidade em Kilos de batatas coletadas de cada Subáreas.<br>
-Tabela "SubArea": Cada Subárea vai ter seu sensor, que são no total de 25 Subáreas por cada Hectare, e em cada Subárea, vai ter seu Sensor.<br>
-Tabela "sensor": Essa tabela se refere ao próprio sensor, o diferencial é a lição fraca com a tabela "SubArea", que vai ligar o sensor com cada Subárea que faz parte do Hectare.<br>
+Tabela "usuario": Inserção dos dados do funcionário da empresa contratante, que ira monitorar os hectares e suas Subáreas, de onde vem as medições do Sensor De umidade.<br><br>
+Tabela "empresa": Onde vão ficar os dados da Empresa.<br><br>
+Tabela "hectare": Vai ficar os dados do hectare, sendo a identificação dos hectares e da quantidade em Kilos de batatas coletadas de cada Subáreas.<br><br>
+Tabela "SubArea": Cada Subárea vai ter seu sensor, que são no total de 25 Subáreas por cada Hectare, e em cada Subárea, vai ter seu Sensor.<br><br>
+Tabela "sensor": Essa tabela se refere ao próprio sensor, o diferencial é a lição fraca com a tabela "SubArea", que vai ligar o sensor com cada Subárea que faz parte do Hectare.<br><br>
 Tabela "medicao": Nessa tabela vai ser inserido os dados capturados pelo sensor de umidade do solo que vai para o arduino que é capturado e processado pela API (dat-acqu-ino),
-que envia para o Banco de Dados e é armazenado.<br>
+que envia para o Banco de Dados e é armazenado.<br><br>
 
 ## Sobre a Empresa
 
