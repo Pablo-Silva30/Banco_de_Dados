@@ -1,6 +1,6 @@
 # Banco_de_Dados
 
-  <img src="https://tse4.mm.bing.net/th/id/OIP.hKIFjNYAzROGUMjPxzIcpAHaHa?cb=ucfimgc2&w=626&h=626&rs=1&pid=ImgDetMain&o=7&rm=3">
+  <img src="https://ehgomes.com.br/wp-content/uploads/2023/08/banco-de-dados-relacionais.webp">
 
 ## Descrição do Banco de Dados
 
@@ -39,7 +39,7 @@ Com a crescente demanda por produtividade, sustentabilidade e qualidade agrícol
 ## Contribuição
 
 Para contribuir com este projeto:
-1. Primeiro clone o repositório: (`git clone https://github.com/GBAlvesM/AgroSense.git`)
+1. Primeiro clone o repositório: (`git clone https://github.com/Pablo-Silva30/Banco_de_Dados.git`)
 2. Todos os dias execute o comando para atualizar o repositório com: (`git pull`)
 3. Faça as alterações necessárias e empacote com: (`git add .`)
 4. Coloque uma mensagem no commit com: (`git commit -m "nome_da_alteração"`)
