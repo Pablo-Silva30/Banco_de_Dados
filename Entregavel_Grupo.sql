@@ -2,22 +2,20 @@ CREATE DATABASE agrosense;
 USE agrosense;
 
 CREATE TABLE empresa(
-idEmpresa INT PRIMARY KEY AUTO_INCREMENT,
+codAtivacao VARCHAR(6) PRIMARY KEY NOT NULL,
 nomeEmpresa VARCHAR(75) NOT NULL,
 cnpj CHAR(14) NOT NULL,
-codAtivacao VARCHAR(15),
 dtCadastro DATETIME DEFAULT CURRENT_TIMESTAMP 
 );
-
+DROP table usuario;
 CREATE TABLE usuario(
 idUsuario INT PRIMARY KEY AUTO_INCREMENT,
 nome VARCHAR(45),
-cpf  VARCHAR(11),
-email VARCHAR(100) NOT NULL UNIQUE,
-CONSTRAINT chkEmail CHECK(email LIKE '%@%'),
-senha VARCHAR(50) NOT NULL,
-fkEmpresaUser INT,
-CONSTRAINT fkEmpresaUsuario FOREIGN KEY(fkEmpresaUser)REFERENCES empresa(idEmpresa)
+cpf  CHAR(11) UNIQUE,
+email VARCHAR(100) UNIQUE,
+senha VARCHAR(50),
+fkEmpresaUser VARCHAR(6),
+CONSTRAINT fkEmpresaUsuario FOREIGN KEY(fkEmpresaUser)REFERENCES empresa(codAtivacao)
 );
 
 CREATE TABLE hectare(
