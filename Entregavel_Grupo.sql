@@ -1,47 +1,52 @@
 CREATE DATABASE agrosense;
 USE agrosense;
 
+drop database agrosense;
+
 CREATE TABLE empresa(
-codAtivacao VARCHAR(6) PRIMARY KEY NOT NULL,
+codAtivacao CHAR(6) PRIMARY KEY,
 nomeEmpresa VARCHAR(75) NOT NULL,
 cnpj CHAR(14) NOT NULL,
-dtCadastro DATETIME DEFAULT CURRENT_TIMESTAMP 
+dtCadastro DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-DROP table usuario;
+
 CREATE TABLE usuario(
 idUsuario INT PRIMARY KEY AUTO_INCREMENT,
 nome VARCHAR(45),
 cpf  CHAR(11) UNIQUE,
 email VARCHAR(100) UNIQUE,
 senha VARCHAR(50),
-fkEmpresaUser VARCHAR(6),
-CONSTRAINT fkEmpresaUsuario FOREIGN KEY(fkEmpresaUser)REFERENCES empresa(codAtivacao)
+fkEmpresaUser CHAR(6),
+CONSTRAINT fkEmpresaUsuario FOREIGN KEY(fkEmpresaUser)REFERENCES empresa(codAtivacao),
+tipo VARCHAR(10)
 );
 
 CREATE TABLE hectare(
 idHectare INT PRIMARY KEY AUTO_INCREMENT,
-nomeHectare VARCHAR(45) NOT NULL,
-kgPlantada INT NOT NULL,
-fkEmpresaHect INT,
-CONSTRAINT fkEmpresaHectare FOREIGN KEY(fkEmpresaHect) REFERENCES empresa(idEmpresa)
+identificacaoHect INT NOT NULL,
+fkEmpresaHect CHAR(6),
+CONSTRAINT fkEmpresaHectare FOREIGN KEY(fkEmpresaHect) REFERENCES empresa(codAtivacao)
 );
 
 CREATE TABLE subArea(
 idSubArea INT,
-nomeArea VARCHAR(45),
+identificacaoSub INT,
 fkHectare int,
-PRIMARY KEY (idSubArea, fkHectare),
+PRIMARY KEY (idSubArea,identificacaoSub, fkHectare),
 CONSTRAINT fkHectare FOREIGN KEY(fkHectare) REFERENCES hectare(idHectare)
 );
 
 CREATE TABLE sensor(
 idSensor INT PRIMARY KEY AUTO_INCREMENT,
-subArea_id INT, 
-CONSTRAINT fkSubAreaSensor FOREIGN KEY(subArea_id) REFERENCES subArea(idSubArea),
+fkSubArea INT, 
+CONSTRAINT fkSubAreaSensor FOREIGN KEY(fkSubArea) REFERENCES subArea(idSubArea),
 fkSubHect INT,
 CONSTRAINT fkSubAreaHectRegra FOREIGN KEY (fkSubHect) REFERENCES subArea(fkHectare),
-dtInstalacao DATE
+dtInstalacao DATE,
+statuss INT CONSTRAINT chkStatus
+CHECK(statuss IN( '0', '1'))
 );
+
 
 CREATE TABLE medicao(
 idMedicao INT PRIMARY KEY AUTO_INCREMENT,
@@ -50,57 +55,60 @@ fksensor INT,
 CONSTRAINT fkMedicaoSensor FOREIGN KEY(fksensor) REFERENCES sensor(idSensor),
 dtMedicao DATETIME
 );
+
+
 -- --------------------------------------- INSERT DAS TABELAS -----------------------------------------
 
 
-INSERT INTO empresa(nomeEmpresa, cnpj,codAtivacao, dtCadastro) VALUES
-('v8Tech',  '12345678900001', 'v812345', '2025-02-12'),
-('C6 Bank','43345678900004','c612345','2025-08-02'),
-('Bradesco','12345678940007','bra12345','2025-05-21'),
-('ToTvs','12345678904509','totvs12345','2025-07-30');
+INSERT INTO empresa(codAtivacao, nomeEmpresa, cnpj, dtCadastro) VALUES
+( 'E54PG6' ,'v8Tech',  '12345678900001', '2025-02-12'),
+( 'CL8P4E','C6 Bank','43345678900004','2025-08-02'),
+( 'OEPF9A','Bradesco','12345678940007','2025-05-21'),
+( 'SF3HM5','ToTvs','12345678904509', '2025-07-30');
 
-INSERT INTO usuario(nome,cpf,email,senha,fkEmpresaUser) VALUES
-('Pablo','44072454322','Pablo@gmail.com','123456789',1),
-('Fagner','32425069251','Fagner@gmail.com','987654321',3),
-('Arthur','45623678901','Arthur@gmail.com','23456789',1),
-('Ricardo','75261248902','Ricardo@gmail.com','98765432',4),
-('Cesar','45215693219','Cesar@gmail.com','34567891',2);
+INSERT INTO usuario(nome,cpf,email,senha,fkEmpresaUser, tipo) VALUES
+('Pablo','44072454322','Pablo@gmail.com','123456789', 'E54PG6', 'admin'),
+('Fagner','32425069251','Fagner@gmail.com','987654321', 'OEPF9A', 'usuario'),
+('Arthur','45623678901','Arthur@gmail.com','23456789', 'E54PG6', 'usuario'),
+('Ricardo','75261248902','Ricardo@gmail.com','98765432', 'SF3HM5', 'admin'),
+('Cesar','45215693219','Cesar@gmail.com','34567891', 'CL8P4E', 'usuario');
 
-INSERT INTO hectare(nomeHectare,kgPlantada,fkEmpresaHect) VALUES
-('Hectare 1', 400, 3),
-('Hectare 1', 450, 4),
-('Hectare 1', 600, 1),
-('Hectare 1', 573, 2);
+INSERT INTO hectare(identificacaoHect, fkEmpresaHect) VALUES
+(1, 'E54PG6'),
+(1, 'SF3HM5'),
+(1, 'E54PG6'),
+(1, 'OEPF9A');
 
-INSERT INTO subArea(idSubArea,nomeArea,fkHectare) VALUES
-(1, 'SubÁrea 1', 1),
-(2, 'SubÁrea 2', 1),
-(1, 'SubÁrea 1', 2),
-(2, 'SubÁrea 2', 2),
-(1, 'SubÁrea 1', 3),
-(2, 'SubÁrea 2', 3),
-(1, 'SubÁrea 1', 4),
-(2, 'SubÁrea 2', 4);
+INSERT INTO subArea(idSubArea,identificacaoSub,fkHectare) VALUES
+(1, 1, 1),
+(2, 2, 1),
+(1, 1, 2),
+(2, 2, 2),
+(1, 1, 3),
+(2, 2, 3),
+(1, 1, 4),
+(2, 2, 4);
 
-INSERT INTO sensor(subArea_id, fkSubHect, dtInstalacao) VALUES
-(1, 1, '2022-06-13'),
-(2, 1, '2022-07-12'),
-(1, 2, '2022-08-11'),
-(2, 2, '2022-09-10'),
-(1, 3, '2023-10-09'),
-(2, 3, '2023-11-08'),
-(1, 4, '2024-03-02'),
-(2, 4, '2024-04-04');
+INSERT INTO sensor(fkSubArea, fkSubHect, dtInstalacao, statuss) VALUES
+(1, 1, '2022-06-13', 0),
+(2, 1, '2022-07-12', 1),
+(1, 2, '2022-08-11', 1),
+(2, 2, '2022-09-10', 0),
+(1, 3, '2023-10-09', 0),
+(2, 3, '2023-11-08', 1),
+(1, 4, '2024-03-02', 1),
+(2, 4, '2024-04-04', 0);
 
-INSERT INTO medicao(fksensor, umidade) VALUES 
-(1, 10),
-(2, 10),
-(3, 10),
-(4, 10),
-(5, 10),
-(6, 10),
-(7, 10),
-(8, 10);
+INSERT INTO medicao(fksensor, umidade, dtMedicao) VALUES 
+(1, 60, null),
+(2, 89, null),
+(3, 70, null),
+(4, 83, null),
+(5, 55, '2025-10-09 12:30:05'),
+(6, 50, '2025-10-09 12:30:05'),
+(7, 75, null),
+(8, 47, '2025-10-09 12:30:05');
+
 
 SELECT
 e.nomeEmpresa as Empresa,
@@ -120,3 +128,64 @@ JOIN
 empresa as e on e.idEmpresa = h.fkEmpresaHect
 JOIN
 usuario as f on idEmpresa = f.fkEmpresaUser;
+
+	CREATE VIEW vwAlerta AS
+    SELECT
+    m.dtMedicao as 'Data',
+    sa.fkHectare,
+    sa.identificacaoSub
+    FROM medicao m
+    JOIN sensor s
+    ON m.fksensor = s.idSensor
+    JOIN subArea sa
+	ON s.fkSubArea = sa.idSubArea
+    JOIN hectare ha
+    ON s.fkSubHect = ha.idHectare
+    WHERE umidade > 80 OR umidade < 60;
+    
+    SELECT * FROM vwAlerta;
+    
+    
+    
+    -- Média SubÁrea
+ALTER VIEW vwMediaSub AS 
+SELECT 
+    sa.idSubArea,
+    sa.identificacaoSub,
+    AVG(m.umidade) AS umidade_media
+FROM medicao m
+JOIN sensor s
+    ON m.fkSensor = s.subArea_id   
+JOIN subArea sa
+    ON s.fkSubHect = sa.fkHectare AND s.subArea_id = sa.idSubArea
+GROUP BY sa.idSubArea, sa.nomeArea;
+
+    select * from vwMediaSub;
+    
+    /* CREATE VIEW vwEvolucao AS
+    SELECT
+    h.identificacaoHect,
+    sa.identificacaoSub,
+    m.umidade,
+    dtInstalacao TIME
+    FROM hectare h */
+    
+    -- MAX CAPTURADO
+    ALTER VIEW vwMaiorUmi AS
+    SELECT 
+    MAX(umidade) AS maiorUmidade
+FROM medicao
+GROUP BY medicao.idMedicao;
+
+select * from vwMaiorUmi;
+
+-- MIN CAPTURADO
+
+CREATE VIEW vwMenorUmi AS
+SELECT 
+MIN(umidade), dtCaptura AS menor_umidade_hoje
+FROM medicao
+GROUP BY medicao.idMedicao;
+
+select * from vwMenorUmi;
+    
