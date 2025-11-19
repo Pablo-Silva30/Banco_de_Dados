@@ -110,30 +110,14 @@ INSERT INTO medicao(fksensor, umidade, dtMedicao) VALUES
 (8, 47, '2025-10-09 12:30:05');
 
 
-SELECT
-e.nomeEmpresa as Empresa,
-f.nome as 'Funcionário Responsável',
-h.nomeHectare as Hectare,
-CONCAT(h.kgPlantada, 'kg') as 'KgPlantadas',
-sa.nomeArea as Área,
-s.idSensor as Sensor,
--- m.umidade,
-s.dtInstalacao as 'Data de Instalação'
-FROM  sensor as s
-JOIN 
-    subArea as sa ON s.subArea_id = sa.idSubArea AND s.fkSubHect = sa.fkHectare
-JOIN 
-    hectare AS h ON sa.fkHectare = h.idHectare
-JOIN 
-empresa as e on e.idEmpresa = h.fkEmpresaHect
-JOIN
-usuario as f on idEmpresa = f.fkEmpresaUser;
-
-	CREATE VIEW vwAlerta AS
+-- PÁGINA DO INÍCIO
+	ALTER VIEW vwAlerta AS
     SELECT
     m.dtMedicao as 'Data',
     sa.fkHectare,
-    sa.identificacaoSub
+    sa.identificacaoSub,
+    s.idSensor AS identSensor,
+    s.statuss as status
     FROM medicao m
     JOIN sensor s
     ON m.fksensor = s.idSensor
@@ -142,50 +126,75 @@ usuario as f on idEmpresa = f.fkEmpresaUser;
     JOIN hectare ha
     ON s.fkSubHect = ha.idHectare
     WHERE umidade > 80 OR umidade < 60;
-    
     SELECT * FROM vwAlerta;
     
+    CREATE VIEW vwKpiAlerta AS
+    SELECT
+    m.dtMedicao as 'Data',
+    sa.fkHectare,
+    sa.identificacaoSub,
+    s.idSensor AS identSensor,
+    s.statuss as status
+    FROM medicao m
+    JOIN sensor s
+    ON m.fksensor = s.idSensor
+    JOIN subArea sa
+	ON s.fkSubArea = sa.idSubArea
+    JOIN hectare ha
+    ON s.fkSubHect = ha.idHectare
+    WHERE umidade > 80 OR umidade < 60
+     ORDER BY dtMedicao DESC LIMIT 1;
+    SELECT * FROM vwKpiAlerta;
+
+       ALTER VIEW vwEvolucao AS
+SELECT
+    h.identificacaoHect AS Hectare,
+    sa.identificacaoSub AS SubArea,
+    m.umidade AS Medição,
+    TIME(m.dtMedicao) AS Hora
+FROM hectare h 
+JOIN subArea sa
+    ON h.idHectare = sa.fkHectare
+JOIN sensor s
+    ON s.fkSubArea = sa.idSubArea AND s.fkSubHect = sa.fkHectare
+JOIN medicao m 
+    ON m.fksensor = s.idSensor;
+    SELECT * FROM vwEvolucao;
+------------------------------------------------------------------------------------
+    
+-- HECTARE
+    
+
+    CREATE VIEW vwumidadesub AS
+    SELECT s.fkSubArea,
+		s.fkSubHect,
+        m.umidade
+        FROM sensor AS s JOIN medicao AS m
+        ON s.idSensor = m.fkSensor;
+        SELECT * FROM vwumidadesub;
+    
+-------------------------------------------------------
     
     
-    -- Média SubÁrea
-ALTER VIEW vwMediaSub AS 
+-- SUBÁREA
+
+ALTER VIEW vwMediaSub AS
 SELECT 
     sa.idSubArea,
     sa.identificacaoSub,
-    AVG(m.umidade) AS umidade_media
+    AVG(m.umidade)    AS umidade_media,
+    MAX(m.umidade)    AS maiorUmidade,
+    MIN(m.umidade)    AS menorUmidade
 FROM medicao m
 JOIN sensor s
-    ON m.fkSensor = s.subArea_id   
+    ON m.fksensor = s.idSensor
 JOIN subArea sa
-    ON s.fkSubHect = sa.fkHectare AND s.subArea_id = sa.idSubArea
-GROUP BY sa.idSubArea, sa.nomeArea;
+    ON s.fkSubArea = sa.idSubArea
+    AND s.fkSubHect = sa.fkHectare
+GROUP BY sa.idSubArea, sa.identificacaoSub;
+
 
     select * from vwMediaSub;
-    
-    /* CREATE VIEW vwEvolucao AS
-    SELECT
-    h.identificacaoHect,
-    sa.identificacaoSub,
-    m.umidade,
-    dtInstalacao TIME
-    FROM hectare h */
-    
-    -- MAX CAPTURADO
-    ALTER VIEW vwMaiorUmi AS
-    SELECT 
-    MAX(umidade) AS maiorUmidade
-FROM medicao
-GROUP BY medicao.idMedicao;
 
-select * from vwMaiorUmi;
-
--- MIN CAPTURADO
-
-CREATE VIEW vwMenorUmi AS
-SELECT 
-MIN(umidade), dtCaptura AS menor_umidade_hoje
-FROM medicao
-GROUP BY medicao.idMedicao;
-
-select * from vwMenorUmi;
+-------------------------------------------------------------------
     
