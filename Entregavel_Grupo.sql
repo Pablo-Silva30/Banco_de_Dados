@@ -1,7 +1,6 @@
+DROP DATABASE agrosense;
 CREATE DATABASE agrosense;
 USE agrosense;
-
-drop database agrosense;
 
 CREATE TABLE empresa(
 codAtivacao CHAR(6) PRIMARY KEY,
@@ -21,6 +20,8 @@ CONSTRAINT fkEmpresaUsuario FOREIGN KEY(fkEmpresaUser)REFERENCES empresa(codAtiv
 tipo VARCHAR(10)
 );
 
+SELECT * FROM usuario;
+
 CREATE TABLE hectare(
 idHectare INT PRIMARY KEY AUTO_INCREMENT,
 identificacaoHect INT NOT NULL,
@@ -29,24 +30,21 @@ CONSTRAINT fkEmpresaHectare FOREIGN KEY(fkEmpresaHect) REFERENCES empresa(codAti
 );
 
 CREATE TABLE subArea(
-idSubArea INT,
+idSubArea INT AUTO_INCREMENT,
 identificacaoSub INT,
 fkHectare int,
-PRIMARY KEY (idSubArea,identificacaoSub, fkHectare),
+PRIMARY KEY (idSubArea, fkHectare),
 CONSTRAINT fkHectare FOREIGN KEY(fkHectare) REFERENCES hectare(idHectare)
 );
 
 CREATE TABLE sensor(
 idSensor INT PRIMARY KEY AUTO_INCREMENT,
-fkSubArea INT, 
-CONSTRAINT fkSubAreaSensor FOREIGN KEY(fkSubArea) REFERENCES subArea(idSubArea),
-fkSubHect INT,
-CONSTRAINT fkSubAreaHectRegra FOREIGN KEY (fkSubHect) REFERENCES subArea(fkHectare),
+fkSub INT, 
+CONSTRAINT fkSubAreaSensor FOREIGN KEY(fkSub) REFERENCES subArea(idSubArea),
 dtInstalacao DATE,
 statuss INT CONSTRAINT chkStatus
 CHECK(statuss IN( '0', '1'))
 );
-
 
 CREATE TABLE medicao(
 idMedicao INT PRIMARY KEY AUTO_INCREMENT,
@@ -75,45 +73,64 @@ INSERT INTO usuario(nome,cpf,email,senha,fkEmpresaUser, tipo) VALUES
 
 INSERT INTO hectare(identificacaoHect, fkEmpresaHect) VALUES
 (1, 'E54PG6'),
-(1, 'SF3HM5'),
-(1, 'E54PG6'),
-(1, 'OEPF9A');
+(2, 'E54PG6'),
+(1, 'OEPF9A'),
+(2, 'OEPF9A'),
+(1,'SF3HM5'),
+(2,'SF3HM5'),
+(1,'CL8P4E'),
+(2,'CL8P4E');
 
-INSERT INTO subArea(idSubArea,identificacaoSub,fkHectare) VALUES
-(1, 1, 1),
-(2, 2, 1),
-(1, 1, 2),
-(2, 2, 2),
-(1, 1, 3),
-(2, 2, 3),
-(1, 1, 4),
-(2, 2, 4);
+SELECT * FROM hectare;
 
-INSERT INTO sensor(fkSubArea, fkSubHect, dtInstalacao, statuss) VALUES
-(1, 1, '2022-06-13', 0),
-(2, 1, '2022-07-12', 1),
-(1, 2, '2022-08-11', 1),
-(2, 2, '2022-09-10', 0),
-(1, 3, '2023-10-09', 0),
-(2, 3, '2023-11-08', 1),
-(1, 4, '2024-03-02', 1),
-(2, 4, '2024-04-04', 0);
+INSERT INTO subArea(identificacaoSub,fkHectare) VALUES
+(1, 1),
+(2, 1),
+(1, 2),
+(2, 2),
+(1,3),
+(2,3),
+(1,4),
+(2,4);
+
+SELECT * FROM subArea;
+
+INSERT INTO sensor(fkSub, dtInstalacao, statuss) VALUES
+(1, '2022-06-13', 1),
+(2, '2022-07-12', 1),
+(3, '2022-08-11', 1),
+(4, '2022-09-10', 1),
+(5, '2023-10-09', 0);
 
 INSERT INTO medicao(fksensor, umidade, dtMedicao) VALUES 
-(1, 60, null),
-(2, 89, null),
-(3, 70, null),
-(4, 83, null),
-(5, 55, '2025-10-09 12:30:05'),
-(6, 50, '2025-10-09 12:30:05'),
-(7, 75, null),
-(8, 47, '2025-10-09 12:30:05');
+(1, 53, '2025-10-09 08:00:00'),
+(1, 54, '2025-10-09 09:00:09'),
+(1, 60, '2025-10-09 10:00:00'),
+(1, 65, '2025-10-09 11:00:00'),
+(1, 67, '2025-10-09 12:00:00'),
+(2, 49, '2025-10-09 08:00:00'),
+(2, 56, '2025-10-09 09:00:00'),
+(2, 56, '2025-10-09 10:00:00'),
+(2, 59, '2025-10-09 11:00:00'),
+(2, 58, '2025-10-09 12:00:00'),
+(3, 76, '2025-10-09 08:00:00'),
+(3, 73, '2025-10-09 09:00:00'),
+(3, 70, '2025-10-09 10:00:00'),
+(3, 62, '2025-10-09 11:00:00'),
+(3, 65, '2025-10-09 12:00:00'),
+(4, 77, '2025-10-09 08:00:00'),
+(4, 81, '2025-10-09 09:00:00'),
+(4, 83, '2025-10-09 10:00:00'),
+(4, 77, '2025-10-09 11:00:00'),
+(4, 75, '2025-10-09 12:00:00');
+
+select * from medicao;
 
 
 -- PÁGINA DO INÍCIO
 	ALTER VIEW vwAlerta AS
     SELECT
-    m.dtMedicao as 'Data',
+    TIME(m.dtMedicao),
     sa.fkHectare,
     sa.identificacaoSub,
     s.idSensor AS identSensor,
@@ -122,31 +139,43 @@ INSERT INTO medicao(fksensor, umidade, dtMedicao) VALUES
     JOIN sensor s
     ON m.fksensor = s.idSensor
     JOIN subArea sa
-	ON s.fkSubArea = sa.idSubArea
+	ON s.fkSub = sa.idSubArea
     JOIN hectare ha
-    ON s.fkSubHect = ha.idHectare
-    WHERE umidade > 80 OR umidade < 60;
+    ON ha.idHectare = sa.fkHectare
+    JOIN empresa e
+    ON ha.fkEmpresaHect = e.codAtivacao
+    WHERE ha.fkEmpresaHect = 'E54PG6';
+    
+    SELECT * from vwAlerta;
+    
+    ALTER VIEW vwSaude AS
+    SELECT (SELECT COUNT(*) FROM sensor WHERE statuss = 0) AS 'Offline', (SELECT COUNT(*) FROM sensor WHERE statuss = 1) AS 'Online';
+		
+    SELECT * FROM vwSaude;
+    
     SELECT * FROM vwAlerta;
     
-    CREATE VIEW vwKpiAlerta AS
+    ALTER VIEW vwKpiAlerta AS
     SELECT
-    m.dtMedicao as 'Data',
+    DATE_FORMAT(m.dtMedicao, '%d-%m-%Y / %H:%i:%s') as 'Data',
     sa.fkHectare,
     sa.identificacaoSub,
-    s.idSensor AS identSensor,
-    s.statuss as status
+    s.idSensor AS identSensor
     FROM medicao m
     JOIN sensor s
     ON m.fksensor = s.idSensor
     JOIN subArea sa
-	ON s.fkSubArea = sa.idSubArea
+	ON s.fkSub = sa.idSubArea
     JOIN hectare ha
-    ON s.fkSubHect = ha.idHectare
-    WHERE umidade > 80 OR umidade < 60
+    ON ha.idHectare = sa.fkHectare
+    JOIN empresa e
+    ON ha.fkEmpresaHect = e.codAtivacao
+    WHERE umidade > 80 OR umidade < 60 AND ha.fkEmpresaHect = 'E54PG6'
      ORDER BY dtMedicao DESC LIMIT 1;
+     
     SELECT * FROM vwKpiAlerta;
 
-       ALTER VIEW vwEvolucao AS
+       CREATE VIEW vwEvolucao AS
 SELECT
     h.identificacaoHect AS Hectare,
     sa.identificacaoSub AS SubArea,
@@ -164,13 +193,13 @@ JOIN medicao m
     
 -- HECTARE
     
-
-    CREATE VIEW vwumidadesub AS
-    SELECT s.fkSubArea,
-		s.fkSubHect,
-        m.umidade
+    ALTER VIEW vwumidadesub AS
+    SELECT s.fkSub,
+        AVG(m.umidade)
         FROM sensor AS s JOIN medicao AS m
-        ON s.idSensor = m.fkSensor;
+        ON s.idSensor = m.fkSensor
+        GROUP BY s.fkSub;
+        
         SELECT * FROM vwumidadesub;
     
 -------------------------------------------------------
@@ -182,7 +211,7 @@ ALTER VIEW vwMediaSub AS
 SELECT 
     sa.idSubArea,
     sa.identificacaoSub,
-    AVG(m.umidade)    AS umidade_media,
+    ROUND(AVG(m.umidade), 1)    AS umidade_media,
     MAX(m.umidade)    AS maiorUmidade,
     MIN(m.umidade)    AS menorUmidade
 FROM medicao m
@@ -191,9 +220,10 @@ JOIN sensor s
 JOIN subArea sa
     ON s.fkSubArea = sa.idSubArea
     AND s.fkSubHect = sa.fkHectare
+    WHERE DATE(m.dtMedicao) = (SELECT CURDATE())
 GROUP BY sa.idSubArea, sa.identificacaoSub;
 
-
+SELECT CURDATE();
     select * from vwMediaSub;
 
 -------------------------------------------------------------------
