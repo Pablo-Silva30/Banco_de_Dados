@@ -125,7 +125,7 @@ INSERT INTO medicao(fksensor, umidade, dtMedicao) VALUES
 
 select * from medicao;
 
-
+ALTER VIEW vwalertas AS
 SELECT CONCAT(DATE_FORMAT(m.dtMedicao, '%d-%m-%Y - %H:%i'), ' | ', 'Hectare ', h.identificacaoHect, ' - ', 'Subárea ', sa.identificacaoSub) AS 'Ocorrência' FROM medicao m
 	JOIN sensor s ON m.fksensor = s.idSensor
 		JOIN subarea sa ON s.fkSub = sa.idSubArea
@@ -133,105 +133,36 @@ SELECT CONCAT(DATE_FORMAT(m.dtMedicao, '%d-%m-%Y - %H:%i'), ' | ', 'Hectare ', h
 				JOIN empresa e ON h.fkEmpresaHect = e.codAtivacao
 					WHERE m.umidade > 80 OR m.umidade < 60 AND e.codAtivacao = 'OEPF9A'
 						LIMIT 7;
-				
--- PÁGINA DO INÍCIO
-	ALTER VIEW vwAlerta AS
-    SELECT
-    TIME(m.dtMedicao),
-    sa.fkHectare,
-    sa.identificacaoSub,
-    s.idSensor AS identSensor,
-    s.statuss as status
-    FROM medicao m
-    JOIN sensor s
-    ON m.fksensor = s.idSensor
-    JOIN subArea sa
-	ON s.fkSub = sa.idSubArea
-    JOIN hectare ha
-    ON ha.idHectare = sa.fkHectare
-    JOIN empresa e
-    ON ha.fkEmpresaHect = e.codAtivacao
-    WHERE ha.fkEmpresaHect = 'E54PG6';
+	
+    SELECT * FROM vwalertas;
     
-    SELECT * from vwAlerta;
+    ----------------------------------------------------------------------------------- 
     
     ALTER VIEW vwSaude AS
     SELECT (SELECT COUNT(*) FROM sensor WHERE statuss = 0) AS 'Offline', (SELECT COUNT(*) FROM sensor WHERE statuss = 1) AS 'Online';
-		
-    SELECT * FROM vwSaude;
     
-    SELECT * FROM vwAlerta;
-    
-    ALTER VIEW vwKpiAlerta AS
-    SELECT
-    DATE_FORMAT(m.dtMedicao, '%d-%m-%Y / %H:%i:%s') as 'Data',
-    sa.fkHectare,
-    sa.identificacaoSub,
-    s.idSensor AS identSensor
-    FROM medicao m
-    JOIN sensor s
-    ON m.fksensor = s.idSensor
-    JOIN subArea sa
-	ON s.fkSub = sa.idSubArea
-    JOIN hectare ha
-    ON ha.idHectare = sa.fkHectare
-    JOIN empresa e
-    ON ha.fkEmpresaHect = e.codAtivacao
-    WHERE umidade > 80 OR umidade < 60 AND ha.fkEmpresaHect = 'E54PG6'
-     ORDER BY dtMedicao DESC LIMIT 1;
-     
-    SELECT * FROM vwKpiAlerta;
 
-       CREATE VIEW vwEvolucao AS
-SELECT
-    h.identificacaoHect AS Hectare,
-    sa.identificacaoSub AS SubArea,
-    m.umidade AS Medição,
-    TIME(m.dtMedicao) AS Hora
-FROM hectare h 
-JOIN subArea sa
-    ON h.idHectare = sa.fkHectare
-JOIN sensor s
-    ON s.fkSubArea = sa.idSubArea AND s.fkSubHect = sa.fkHectare
-JOIN medicao m 
-    ON m.fksensor = s.idSensor;
-    SELECT * FROM vwEvolucao;
-------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
     
--- HECTARE
+    ALTER VIEW vwKpis AS 
+    SELECT 
+    (SELECT m.umidade FROM medicao AS m ORDER BY m.idMedicao DESC LIMIT 1) as umiatual,
+    (SELECT MAX(m.umidade) FROM medicao AS m) AS maxumi,
+    (SELECT DATE_FORMAT(m.dtMedicao, '%Hh%i') FROM medicao m
+	WHERE m.umidade = (SELECT MAX(m.umidade) FROM medicao m)) AS hrMax,
+    (SELECT MIN(m.umidade) FROM medicao AS m) as minumi,
+	(SELECT COUNT(*) FROM vwAlertas)as qtdOcorrencia,
+	(SELECT DATE_FORMAT(m.dtMedicao, '%Hh%i') FROM medicao m
+	WHERE m.umidade = (SELECT MIN(m.umidade) FROM medicao m)) AS hrMin
+    FROM medicao AS m JOIN sensor s ON m.fksensor = s.idSensor
+		JOIN subarea sa ON s.fkSub = sa.idSubArea
+			JOIN hectare h ON sa.fkHectare = h.idHectare
+				JOIN empresa e ON h.fkEmpresaHect = e.codAtivacao
+                WHERE e.codAtivacao = 'E54PG6'
+                GROUP BY m.umidade
+					ORDER BY m.umidade LIMIT 1;
+                
+                
+SELECT * FROM vwKpis;
     
-    ALTER VIEW vwumidadesub AS
-    SELECT s.fkSub,
-        AVG(m.umidade)
-        FROM sensor AS s JOIN medicao AS m
-        ON s.idSensor = m.fkSensor
-        GROUP BY s.fkSub;
-        
-        SELECT * FROM vwumidadesub;
-    
--------------------------------------------------------
-    
-    
--- SUBÁREA
-
-ALTER VIEW vwMediaSub AS
-SELECT 
-    sa.idSubArea,
-    sa.identificacaoSub,
-    ROUND(AVG(m.umidade), 1)    AS umidade_media,
-    MAX(m.umidade)    AS maiorUmidade,
-    MIN(m.umidade)    AS menorUmidade
-FROM medicao m
-JOIN sensor s
-    ON m.fksensor = s.idSensor
-JOIN subArea sa
-    ON s.fkSubArea = sa.idSubArea
-    AND s.fkSubHect = sa.fkHectare
-    WHERE DATE(m.dtMedicao) = (SELECT CURDATE())
-GROUP BY sa.idSubArea, sa.identificacaoSub;
-
-SELECT CURDATE();
-    select * from vwMediaSub;
-
--------------------------------------------------------------------
-    
+   
