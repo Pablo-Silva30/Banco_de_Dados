@@ -1,4 +1,3 @@
-DROP DATABASE agrosense;
 CREATE DATABASE agrosense;
 USE agrosense;
 
@@ -127,6 +126,14 @@ INSERT INTO medicao(fksensor, umidade, dtMedicao) VALUES
 select * from medicao;
 
 
+SELECT CONCAT(DATE_FORMAT(m.dtMedicao, '%d-%m-%Y - %H:%i'), ' | ', 'Hectare ', h.identificacaoHect, ' - ', 'Subárea ', sa.identificacaoSub) AS 'Ocorrência' FROM medicao m
+	JOIN sensor s ON m.fksensor = s.idSensor
+		JOIN subarea sa ON s.fkSub = sa.idSubArea
+			JOIN hectare h ON sa.fkHectare = h.idHectare
+				JOIN empresa e ON h.fkEmpresaHect = e.codAtivacao
+					WHERE m.umidade > 80 OR m.umidade < 60 AND e.codAtivacao = 'OEPF9A'
+						LIMIT 7;
+				
 -- PÁGINA DO INÍCIO
 	ALTER VIEW vwAlerta AS
     SELECT
