@@ -75,7 +75,30 @@ INSERT INTO sensor (fkSub, statuss) VALUES
     
 SELECT * FROM medicao;
 
-ALTER VIEW vwalertas AS
+DESC medicao;
+INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
+	(75, 1, '2025-01-01 08:00:00'),
+	(70, 1, '2025-01-01 09:00:00'),
+	(60, 1, '2025-01-01 09:30:00'),
+	(65, 1, '2025-01-01 10:15:00'),
+	(79, 1, '2025-01-01 10:45:00'),
+	(62, 1, '2025-01-01 10:30:00'),
+	(69, 1, '2025-01-01 11:00:00'),
+	(50, 1, '2025-01-01 11:30:00'),
+	(90, 1, '2025-01-01 12:30:00');
+
+INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
+	(60, 1, '2025-01-01 22:00:00');
+
+INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
+	(60, 1, '2025-01-01 17:00:00');
+
+INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
+	(65, 1, '2025-01-01 18:00:00');
+    
+INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
+	(82, 1, '2025-01-01 23:00:00');
+CREATE VIEW vwalertas AS
 SELECT CONCAT(DATE_FORMAT(m.dtMedicao, '%d-%m-%Y - %H:%i'), ' | ', 'Hectare ', h.identificacaoHect, ' - ', 'Subárea ', sa.identificacaoSub) AS 'Ocorrência' FROM medicao m
 	JOIN sensor s ON m.fksensor = s.idSensor
 		JOIN subarea sa ON s.fkSub = sa.idSubArea
@@ -88,13 +111,13 @@ SELECT CONCAT(DATE_FORMAT(m.dtMedicao, '%d-%m-%Y - %H:%i'), ' | ', 'Hectare ', h
     
     ----------------------------------------------------------------------------------- 
     
-    ALTER VIEW vwSaude AS
+    CREATE VIEW vwSaude AS
     SELECT (SELECT COUNT(*) FROM sensor WHERE statuss = 0) AS 'Offline', (SELECT COUNT(*) FROM sensor WHERE statuss = 1) AS 'Online';
     
 
 -----------------------------------------------------------------------------------
     
-    ALTER VIEW vwKpis AS 
+    CREATE VIEW vwKpis AS 
     SELECT 
     (SELECT m.umidade FROM medicao AS m ORDER BY m.idMedicao DESC LIMIT 1) as umiatual,
     (SELECT MAX(m.umidade) FROM medicao AS m LIMIT 1) AS maxumi,
@@ -114,5 +137,21 @@ SELECT CONCAT(DATE_FORMAT(m.dtMedicao, '%d-%m-%Y - %H:%i'), ' | ', 'Hectare ', h
                 
                 
 SELECT * FROM vwKpis;
+----------------------------------------------------------------------------------------
+
+
+ALTER VIEW vwGrafico AS
+	SELECT m.umidade  as umi, 
+     DATE_FORMAT(m.dtMedicao, '%Hh%i')AS hr
+    FROM medicao AS m 
+		JOIN sensor s ON m.fksensor = s.idSensor
+			JOIN subarea sa ON s.fkSub = sa.idSubArea
+				JOIN hectare h ON sa.fkHectare = h.idHectare
+					JOIN empresa e ON h.fkEmpresaHect = e.codAtivacao
+						WHERE e.codAtivacao = 'XPTO99'
+							GROUP BY m.umidade, hr
+								ORDER BY hr LIMIT 10;
     
+    
+SELECT * FROM vwGrafico;
    
