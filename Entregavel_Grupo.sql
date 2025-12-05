@@ -1,4 +1,3 @@
-DROP DATABASE agrosense;
 CREATE DATABASE agrosense;
 USE agrosense;
 
@@ -18,8 +17,6 @@ senha VARCHAR(50),
 fkEmpresaUser CHAR(6),
 CONSTRAINT fkEmpresaUsuario FOREIGN KEY(fkEmpresaUser)REFERENCES empresa(codAtivacao)
 );
-
-SELECT * FROM usuario;
 
 CREATE TABLE hectare(
 idHectare INT PRIMARY KEY AUTO_INCREMENT,
@@ -55,12 +52,8 @@ dtMedicao DATETIME
 
 
 -- --------------------------------------- INSERT DAS TABELAS -----------------------------------------
-DESC empresa;
-
 INSERT INTO empresa (codAtivacao, nomeEmpresa, cnpj, dtCadastro) VALUES
 	('XPTO99', 'OPTX Batatas', '1234567891234', '2025-11-03');
-    
-DESC sensor;
 
 INSERT INTO hectare (identificacaoHect, fkEmpresaHect) VALUES
 	(1, 'XPTO99');
@@ -73,31 +66,8 @@ INSERT INTO sensor (fkSub, statuss) VALUES
 	(1, 1),
 	(2, 0);
     
-SELECT * FROM medicao;
 
-DESC medicao;
-INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
-	(75, 1, '2025-01-01 08:00:00'),
-	(70, 1, '2025-01-01 09:00:00'),
-	(60, 1, '2025-01-01 09:30:00'),
-	(65, 1, '2025-01-01 10:15:00'),
-	(79, 1, '2025-01-01 10:45:00'),
-	(62, 1, '2025-01-01 10:30:00'),
-	(69, 1, '2025-01-01 11:00:00'),
-	(50, 1, '2025-01-01 11:30:00'),
-	(90, 1, '2025-01-01 12:30:00');
-
-INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
-	(60, 1, '2025-01-01 22:00:00');
-
-INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
-	(60, 1, '2025-01-01 17:00:00');
-
-INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
-	(65, 1, '2025-01-01 18:00:00');
-    
-INSERT INTO medicao(umidade, fksensor, dtMedicao) VALUES
-	(82, 1, '2025-01-01 23:00:00');
+-- ------------------------------------------------- Criação da views -------------------------------------------------------------------------------------
 CREATE VIEW vwalertas AS
 SELECT CONCAT(DATE_FORMAT(m.dtMedicao, '%d-%m-%Y - %H:%i'), ' | ', 'Hectare ', h.identificacaoHect, ' - ', 'Subárea ', sa.identificacaoSub) AS 'Ocorrência' FROM medicao m
 	JOIN sensor s ON m.fksensor = s.idSensor
@@ -107,40 +77,61 @@ SELECT CONCAT(DATE_FORMAT(m.dtMedicao, '%d-%m-%Y - %H:%i'), ' | ', 'Hectare ', h
 					WHERE m.umidade > 80 OR m.umidade < 60 AND e.codAtivacao = 'XPTO99'
 						ORDER BY idMedicao DESC LIMIT 7;
 	
-    SELECT * FROM vwalertas;
-    
-    ----------------------------------------------------------------------------------- 
-    
+
     CREATE VIEW vwSaude AS
-    SELECT (SELECT COUNT(*) FROM sensor WHERE statuss = 0) AS 'Offline', (SELECT COUNT(*) FROM sensor WHERE statuss = 1) AS 'Online';
+    SELECT (SELECT COUNT(*) FROM sensor WHERE statuss = 0) 
+    AS 'Offline', 
+    (SELECT COUNT(*) 
+    FROM sensor 
+    WHERE statuss = 1) AS 'Online';
     
 
------------------------------------------------------------------------------------
-    
     CREATE VIEW vwKpis AS 
-    SELECT 
-    (SELECT m.umidade FROM medicao AS m ORDER BY m.idMedicao DESC LIMIT 1) as umiatual,
-    (SELECT MAX(m.umidade) FROM medicao AS m LIMIT 1) AS maxumi,
-    (SELECT DATE_FORMAT(m.dtMedicao, '%Hh%i') FROM medicao m
-	WHERE m.umidade = (SELECT MAX(m.umidade) FROM medicao m) LIMIT 1) AS hrMax,
-    (SELECT MIN(m.umidade) FROM medicao AS m LIMIT 1) as minumi,
-	(SELECT COUNT(*) FROM vwAlertas)as qtdOcorrencia,
-	(SELECT DATE_FORMAT(m.dtMedicao, '%Hh%i') FROM medicao m
-	WHERE m.umidade = (SELECT MIN(m.umidade) FROM medicao m) LIMIT 1) AS hrMin
-    FROM medicao AS m JOIN sensor s ON m.fksensor = s.idSensor
-		JOIN subarea sa ON s.fkSub = sa.idSubArea
-			JOIN hectare h ON sa.fkHectare = h.idHectare
-				JOIN empresa e ON h.fkEmpresaHect = e.codAtivacao
-                WHERE e.codAtivacao = 'XPTO99'
-                GROUP BY m.umidade
-					ORDER BY m.umidade LIMIT 1;
-                
-                
-SELECT * FROM vwKpis;
-----------------------------------------------------------------------------------------
+    SELECT
+    (SELECT m.umidade
+     FROM medicao AS m
+     WHERE DATE(m.dtMedicao) = CURDATE()
+     ORDER BY m.dtMedicao DESC
+     LIMIT 1
+    ) AS umiAtual,
 
+    (SELECT MAX(m.umidade)
+     FROM medicao AS m
+     WHERE DATE(m.dtMedicao) = CURDATE()
+    ) AS maxUmi,
 
-ALTER VIEW vwGrafico AS
+    (SELECT DATE_FORMAT(m.dtMedicao, '%Hh%i')
+     FROM medicao AS m
+     WHERE DATE(m.dtMedicao) = CURDATE()
+     ORDER BY m.umidade DESC, m.dtMedicao ASC
+     LIMIT 1
+    ) AS hrMax,
+
+    (SELECT MIN(m.umidade)
+     FROM medicao AS m
+     WHERE DATE(m.dtMedicao) = CURDATE()
+    ) AS minUmi,
+
+    (SELECT DATE_FORMAT(m.dtMedicao, '%Hh%i')
+     FROM medicao AS m
+     WHERE DATE(m.dtMedicao) = CURDATE()
+     ORDER BY m.umidade ASC, m.dtMedicao ASC 
+     LIMIT 1
+    ) AS hrMin,
+
+    (SELECT COUNT(m.idMedicao)
+     FROM medicao AS m
+     JOIN sensor s ON m.fksensor = s.idSensor
+     JOIN subArea sa ON s.fkSub = sa.idSubArea
+     JOIN hectare h ON sa.fkHectare = h.idHectare
+     JOIN empresa e ON h.fkEmpresaHect = e.codAtivacao
+     WHERE e.codAtivacao = 'XPTO99'
+       AND DATE(m.dtMedicao) = CURDATE()
+       AND (m.umidade > 80 OR m.umidade < 60)
+    ) AS qtdOcorrencia;
+                
+
+CREATE VIEW vwGrafico AS
 	SELECT m.umidade  as umi, 
      DATE_FORMAT(m.dtMedicao, '%Hh%i')AS hr
     FROM medicao AS m 
@@ -153,5 +144,4 @@ ALTER VIEW vwGrafico AS
 								ORDER BY hr LIMIT 10;
     
     
-SELECT * FROM vwGrafico;
    
